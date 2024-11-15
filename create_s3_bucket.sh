@@ -15,4 +15,4 @@ else
     echo "Error creating bucket $BUCKET_NAME."
 fi
 
-echo "Welcome To Cloud Binary" 
+echo "Welcome To Cloud Binary" > /var/www/html/index.html

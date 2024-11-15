@@ -15,3 +15,5 @@ if [ $? -eq 0 ]; then
 else
     echo "Error uploading file to S3."
 fi
+
+echo "Welcome To DevOps World"
