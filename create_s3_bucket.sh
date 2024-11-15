@@ -14,3 +14,5 @@ if [ $? -eq 0 ]; then
 else
     echo "Error creating bucket $BUCKET_NAME."
 fi
+
+echo "Welcome To Cloud Binary" 
