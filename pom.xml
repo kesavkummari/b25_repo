@@ -14,12 +14,13 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-        <sonar.host.url>http://54.235.42.173:9000</sonar.host.url>
-        <sonar.organization>c3ops-java-project2024</sonar.organization>
-        <sonar.projectKey>c3ops-java-project2024</sonar.projectKey>
-        <sonar.login>sqp_cdf84ccf5529bb07a3de532a46c258d035b6809a</sonar.login>       
+        <sonar.host.url>http://3.92.228.141:9000</sonar.host.url>
+        <sonar.organization>Digital</sonar.organization>
+        <sonar.projectKey>Digital</sonar.projectKey>
+        <sonar.login>sqp_e26f57ce6ac1ac54b2ff067cc74e9e70a25baa2a</sonar.login>       
 
     </properties>
+
 
     <distributionManagement>
 
