@@ -1,0 +1,100 @@
+---
+- name: Download, Install & Configure Apache Tomcat
+  hosts: localhost
+  become: true
+
+  vars:
+    tomcat_version: 9.0.97
+    tomcat_install_dir: /opt/tomcat
+    tomcat_service_name: tomcat
+    artifact_url: "https://gitlab.com/kesav.kummari/ansible-role-tomcat/-/raw/main/tomcat/files/devops.war"
+    ui_manager_user: "{{ vault_ui_manager_user }}"
+    ui_manager_pass: "{{ vault_ui_manager_pass }}"
+    ui_admin_username: "{{ vault_ui_admin_username }}"
+    ui_admin_pass: "{{ vault_ui_admin_pass }}"
+
+  tasks:
+    - name: Update the package manager cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      ignore_errors: yes
+
+    - name: Install Java
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Add tomcat group
+      group:
+        name: tomcat
+
+    - name: Add "tomcat" user
+      user:
+        name: tomcat
+        group: tomcat
+        home: /usr/share/tomcat
+        createhome: no
+        system: yes
+
+    - name: Create Tomcat install directory
+      file:
+        path: "{{ tomcat_install_dir }}"
+        state: directory
+        mode: '0750'
+        owner: tomcat
+        group: tomcat
+
+    - name: Download Tomcat archive
+      get_url:
+        url: "https://downloads.apache.org/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        dest: /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+
+    - name: Extract Tomcat archive
+      unarchive:
+        src: /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+        dest: "{{ tomcat_install_dir }}"
+        owner: tomcat
+        group: tomcat
+        remote_src: yes
+        extra_opts: "--strip-components=1"
+        creates: "{{ tomcat_install_dir }}/bin"
+
+    - name: Set Tomcat ownership
+      file:
+        path: "{{ tomcat_install_dir }}"
+        state: directory
+        mode: '0750'
+        owner: tomcat
+        group: tomcat
+        recurse: yes
+
+    - name: Create Tomcat service file
+      template:
+        src: tomcat.service
+        dest: /etc/systemd/system/{{ tomcat_service_name }}.service
+
+    - name: Set UI access credentials
+      template:
+        src: tomcat-users.xml
+        dest: "{{ tomcat_install_dir }}/conf/tomcat-users.xml"
+
+    - name: Allow access to Manager and Host Manager apps from any IP
+      template:
+        src: context.xml
+        dest: "{{ item }}"
+      with_items:
+        - "{{ tomcat_install_dir }}/webapps/host-manager/META-INF/context.xml"
+        - "{{ tomcat_install_dir }}/webapps/manager/META-INF/context.xml"
+
+    - name: Download artifact
+      get_url:
+        url: "{{ artifact_url }}"
+        dest: "{{ tomcat_install_dir }}/webapps/devops.war"
+        mode: '0644'
+
+    - name: Start Tomcat service
+      systemd:
+        name: "{{ tomcat_service_name }}"
+        state: started
+        enabled: yes
